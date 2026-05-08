@@ -7,6 +7,7 @@ class BaHistoryEntry {
   final DateTime date;
   final String status;
   final bool isDraft;
+  final bool isInProgress;
   final bool isApproved;
   final String? lokasi;
   final Map<String, dynamic>? data;
@@ -18,6 +19,7 @@ class BaHistoryEntry {
     required this.date,
     required this.status,
     required this.isDraft,
+    this.isInProgress = false,
     this.isApproved = false,
     this.lokasi,
     this.data,

@@ -139,7 +139,7 @@ class PdfGeneratorService {
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
             pw.Text(
-              'Submittal Sample',
+              'My Fave',
               style: pw.TextStyle(
                 color: _pdfBlue,
                 fontSize: 14,

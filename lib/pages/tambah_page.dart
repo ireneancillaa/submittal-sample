@@ -56,12 +56,14 @@ class _TambahPageState extends State<TambahPage> {
       controller.fromJson(entry.data!);
     } else {
       // Fallback if data is missing but entry exists
-      controller.noBA.value = entry.title.replaceAll('BA Vaksinasi ', '').replaceAll('(Draft)', '');
+      controller.noBA.value = entry.title
+          .replaceAll('BA Vaksinasi ', '')
+          .replaceAll('(Draft)', '');
       controller.customer.value = entry.customer;
       controller.selectedDate.value = entry.date;
       controller.isApproved.value = entry.isApproved;
     }
-    
+
     if (entry.isDraft) {
       _currentStep = 2;
     }
@@ -92,9 +94,7 @@ class _TambahPageState extends State<TambahPage> {
         Marker(
           markerId: const MarkerId('current_location'),
           position: latLng,
-          icon: BitmapDescriptor.defaultMarkerWithHue(
-            BitmapDescriptor.hueBlue,
-          ),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
         ),
       );
 
@@ -126,17 +126,23 @@ class _TambahPageState extends State<TambahPage> {
     }
   }
 
-  void _submitForm() {
+  void _submitForm({bool isCheckOut = false}) {
     final historyController = Get.find<HistoryController>();
-    
+
     final newEntry = BaHistoryEntry(
-      id: widget.initialEntry?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      title: 'BA Vaksinasi ${controller.noBA.value.isEmpty ? 'Hatchery' : controller.noBA.value}',
-      customer: controller.customer.value.isEmpty ? 'Customer Baru' : controller.customer.value,
+      id:
+          widget.initialEntry?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
+      title:
+          'BA Vaksinasi ${controller.noBA.value.isEmpty ? 'Hatchery' : controller.noBA.value}',
+      customer: controller.customer.value.isEmpty
+          ? 'Customer Baru'
+          : controller.customer.value,
       date: controller.selectedDate.value,
-      status: 'Selesai',
+      status: isCheckOut ? 'In Progress' : 'Selesai',
       isDraft: false,
-      isApproved: false,
+      isInProgress: isCheckOut,
+      isApproved: !isCheckOut,
       data: controller.toJson(),
     );
 
@@ -145,22 +151,65 @@ class _TambahPageState extends State<TambahPage> {
     } else {
       historyController.addEntry(newEntry);
     }
-    
+
     // Reset controller for next BA
     Get.delete<BeritaAcaraController>();
-    
+
     if (widget.onBack != null) {
       widget.onBack!();
     }
   }
 
+  void _cancelForm() {
+    // Cancel all actions and go back to dashboard
+    Get.delete<BeritaAcaraController>();
+
+    if (widget.onBack != null) {
+      widget.onBack!();
+    } else {
+      Get.offAllNamed('/dashboard');
+    }
+  }
+
+  bool _validateAllStepsCompleted() {
+    // Check if all required fields are filled
+    // You can add specific validation for required steps here
+
+    if (controller.noBA.value.isEmpty) {
+      Get.snackbar(
+        'Validasi',
+        'Nomor BA harus diisi',
+        backgroundColor: const Color(0xFFFF4E43),
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
+    if (controller.customer.value.isEmpty) {
+      Get.snackbar(
+        'Validasi',
+        'Customer harus diisi',
+        backgroundColor: const Color(0xFFFF4E43),
+        colorText: Colors.white,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
   void _saveDraft() {
     final historyController = Get.find<HistoryController>();
-    
+
     final newEntry = BaHistoryEntry(
-      id: widget.initialEntry?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
-      title: 'BA Vaksinasi ${controller.noBA.value.isEmpty ? '(Draft)' : controller.noBA.value}',
-      customer: controller.customer.value.isEmpty ? 'Customer Baru' : controller.customer.value,
+      id:
+          widget.initialEntry?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
+      title:
+          'BA Vaksinasi ${controller.noBA.value.isEmpty ? '(Draft)' : controller.noBA.value}',
+      customer: controller.customer.value.isEmpty
+          ? 'Customer Baru'
+          : controller.customer.value,
       date: controller.selectedDate.value,
       status: 'Draft',
       isDraft: true,
@@ -170,12 +219,26 @@ class _TambahPageState extends State<TambahPage> {
 
     if (widget.initialEntry != null) {
       historyController.updateEntry(newEntry);
+      Get.snackbar(
+        'Berhasil',
+        'Draft berhasil diupdate',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
     } else {
       historyController.addEntry(newEntry);
+      Get.snackbar(
+        'Berhasil',
+        'Draft berhasil disimpan',
+        backgroundColor: const Color(0xFF10B981),
+        colorText: Colors.white,
+        duration: const Duration(seconds: 2),
+      );
     }
-    
+
     Get.delete<BeritaAcaraController>();
-    
+
     if (widget.onBack != null) {
       widget.onBack!();
     }
@@ -344,13 +407,18 @@ class _TambahPageState extends State<TambahPage> {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: () => Navigator.pop(context),
+                onPressed: _cancelForm,
                 icon: const Icon(Icons.close, size: 18),
-                label: const Text('Batal', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                label: const Text(
+                  'Batal',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                ),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: _primaryBlue,
                   side: const BorderSide(color: _primaryBlue, width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                   minimumSize: const Size(0, 50),
                 ),
               ),
@@ -358,18 +426,30 @@ class _TambahPageState extends State<TambahPage> {
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (_validateAllStepsCompleted()) {
+                    _submitForm(isCheckOut: true);
+                  }
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _primaryBlue,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                   minimumSize: const Size(0, 50),
                 ),
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('Check Out', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                    Text(
+                      'Check Out',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     SizedBox(width: 8),
                     Icon(Icons.chevron_right_rounded, size: 20),
                   ],
@@ -428,11 +508,16 @@ class _TambahPageState extends State<TambahPage> {
                 children: [
                   Text(
                     _currentStep == _totalSteps ? 'Selesai' : 'Lanjut',
-                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Icon(
-                    _currentStep == _totalSteps ? Icons.check_circle_outline : Icons.chevron_right_rounded,
+                    _currentStep == _totalSteps
+                        ? Icons.check_circle_outline
+                        : Icons.chevron_right_rounded,
                     size: 20,
                   ),
                 ],

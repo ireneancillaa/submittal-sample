@@ -256,6 +256,8 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
   late TextEditingController _matiController;
   late TextEditingController _gantiJarumController;
 
+  final Map<String, String?> _errors = {};
+
   @override
   void initState() {
     super.initState();
@@ -285,6 +287,19 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
   int get _mati => int.tryParse(_matiController.text) ?? 0;
   int get _jumlahCulling => _basah + _berdarah + _mati;
   double get _persentase => _doc > 0 ? (_jumlahCulling / _doc) * 100 : 0;
+
+  bool _validate() {
+    setState(() {
+      _errors.clear();
+      if (_namaController.text.isEmpty) _errors['nama'] = 'Nama vaksinator harus diisi';
+      if (_docController.text.isEmpty) _errors['doc'] = 'Jumlah DOC harus diisi';
+      if (_basahController.text.isEmpty) _errors['basah'] = 'Culling basah harus diisi';
+      if (_berdarahController.text.isEmpty) _errors['berdarah'] = 'Culling berdarah harus diisi';
+      if (_matiController.text.isEmpty) _errors['mati'] = 'Culling mati harus diisi';
+      if (_gantiJarumController.text.isEmpty) _errors['ganti'] = 'Jumlah ganti jarum harus diisi';
+    });
+    return _errors.isEmpty;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -340,9 +355,18 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
             ],
           ),
           const SizedBox(height: 24),
-          _buildField('Nama vaksinator', _namaController, hint: 'Budi'),
+          _buildField(
+            'Nama vaksinator', 
+            _namaController, 
+            hint: 'Budi',
+            errorText: _errors['nama'],
+            onChanged: (v) {
+              if (_errors['nama'] != null) setState(() => _errors['nama'] = null);
+            },
+          ),
           const SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: _buildField(
@@ -350,7 +374,10 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
                   _docController,
                   hint: '1200',
                   isNumber: true,
-                  onChanged: (v) => setState(() {}),
+                  errorText: _errors['doc'],
+                  onChanged: (v) => setState(() {
+                    _errors['doc'] = null;
+                  }),
                 ),
               ),
               const SizedBox(width: 12),
@@ -360,13 +387,17 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
                   _basahController,
                   hint: '3',
                   isNumber: true,
-                  onChanged: (v) => setState(() {}),
+                  errorText: _errors['basah'],
+                  onChanged: (v) => setState(() {
+                    _errors['basah'] = null;
+                  }),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: _buildField(
@@ -374,7 +405,10 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
                   _berdarahController,
                   hint: '2',
                   isNumber: true,
-                  onChanged: (v) => setState(() {}),
+                  errorText: _errors['berdarah'],
+                  onChanged: (v) => setState(() {
+                    _errors['berdarah'] = null;
+                  }),
                 ),
               ),
               const SizedBox(width: 12),
@@ -384,7 +418,10 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
                   _matiController,
                   hint: '1',
                   isNumber: true,
-                  onChanged: (v) => setState(() {}),
+                  errorText: _errors['mati'],
+                  onChanged: (v) => setState(() {
+                    _errors['mati'] = null;
+                  }),
                 ),
               ),
             ],
@@ -413,6 +450,10 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
             _gantiJarumController,
             hint: '2',
             isNumber: true,
+            errorText: _errors['ganti'],
+            onChanged: (v) => setState(() {
+              _errors['ganti'] = null;
+            }),
           ),
           const SizedBox(height: 16),
           Row(
@@ -459,19 +500,21 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    widget.onSave(
-                      VaksinatorData(
-                        nama: _namaController.text,
-                        jumlahDOC: int.tryParse(_docController.text) ?? 0,
-                        cullingBasah: int.tryParse(_basahController.text) ?? 0,
-                        cullingBerdarah:
-                            int.tryParse(_berdarahController.text) ?? 0,
-                        cullingMati: int.tryParse(_matiController.text) ?? 0,
-                        gantiJarum:
-                            int.tryParse(_gantiJarumController.text) ?? 0,
-                      ),
-                    );
-                    Navigator.pop(context);
+                    if (_validate()) {
+                      widget.onSave(
+                        VaksinatorData(
+                          nama: _namaController.text,
+                          jumlahDOC: int.tryParse(_docController.text) ?? 0,
+                          cullingBasah: int.tryParse(_basahController.text) ?? 0,
+                          cullingBerdarah:
+                              int.tryParse(_berdarahController.text) ?? 0,
+                          cullingMati: int.tryParse(_matiController.text) ?? 0,
+                          gantiJarum:
+                              int.tryParse(_gantiJarumController.text) ?? 0,
+                        ),
+                      );
+                      Navigator.pop(context);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF008CFF),
@@ -503,6 +546,7 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
     String? hint,
     bool isNumber = false,
     ValueChanged<String>? onChanged,
+    String? errorText,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -521,7 +565,7 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE7EEF8)),
+            border: Border.all(color: errorText != null ? const Color(0xFFEF4444) : const Color(0xFFE7EEF8)),
           ),
           child: TextFormField(
             controller: controller,
@@ -548,6 +592,18 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
             ),
           ),
         ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 4),
+            child: Text(
+              errorText,
+              style: const TextStyle(
+                color: Color(0xFFEF4444),
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -587,4 +643,3 @@ class _VaksinatorFormState extends State<_VaksinatorForm> {
     );
   }
 }
-

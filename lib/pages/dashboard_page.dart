@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../controllers/login_controller.dart';
 import 'laporan_page.dart';
 import 'profile_page.dart';
 import 'tambah_page.dart';
@@ -14,6 +15,7 @@ class DashboardPage extends StatefulWidget {
   static const Color _blue = Color(0xFF008CFF);
   static const Color _darkBlue = Color(0xFF002A56);
   static const Color _mutedText = Color(0xFF68748A);
+  static const Color _cyan = Color(0xFF06B6D4);
 
   @override
   State<DashboardPage> createState() => _DashboardPageState();
@@ -228,7 +230,11 @@ class _DashboardContent extends StatelessWidget {
     // Filter by status first
     var result = entries.toList();
     if (selectedStatus != 'Semua') {
-      result = result.where((e) => e.status == selectedStatus).toList();
+      if (selectedStatus == 'In Progress') {
+        result = result.where((e) => e.isInProgress).toList();
+      } else {
+        result = result.where((e) => e.status == selectedStatus).toList();
+      }
     }
 
     if (searchQuery.isEmpty) {
@@ -257,38 +263,46 @@ class _DashboardContent extends StatelessWidget {
         const _CreateCard(),
         const SizedBox(height: 16),
         Obx(
-          () => Row(
-            children: [
-              Expanded(
-                child: _StatCard(
+          () => SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _StatCard(
                   icon: Icons.description_outlined,
                   title: 'Total BA',
                   value: _historyController.totalBA.toString(),
                   valueColor: DashboardPage._blue,
                   iconBackground: const Color(0xFFEAF5FF),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _StatCard(
+                const SizedBox(width: 8),
+                _StatCard(
                   icon: Icons.edit_note,
                   title: 'Draft',
                   value: _historyController.draftCount.toString(),
                   valueColor: const Color(0xFFFF9700),
                   iconBackground: const Color(0xFFFFF2DF),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _StatCard(
+                const SizedBox(width: 8),
+                _StatCard(
+                  icon: Icons.sync_rounded,
+                  title: 'In Progress',
+                  value: _historyController.historyList
+                      .where((e) => e.isInProgress)
+                      .length
+                      .toString(),
+                  valueColor: DashboardPage._cyan,
+                  iconBackground: const Color(0xFFDEFCFE),
+                ),
+                const SizedBox(width: 8),
+                _StatCard(
                   icon: Icons.check_circle_outlined,
                   title: 'Selesai',
                   value: _historyController.approvedCount.toString(),
                   valueColor: const Color(0xFF10A83A),
                   iconBackground: const Color(0xFFE8F9EE),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 26),
@@ -323,7 +337,9 @@ class _DashboardContent extends StatelessWidget {
               itemBuilder: (context, index) {
                 final entry = entries[index];
                 return Padding(
-                  padding: EdgeInsets.only(bottom: index == entries.length - 1 ? 0 : 12),
+                  padding: EdgeInsets.only(
+                    bottom: index == entries.length - 1 ? 0 : 12,
+                  ),
                   child: _BaListItem(
                     title: entry.title,
                     customer: entry.customer,
@@ -331,6 +347,7 @@ class _DashboardContent extends StatelessWidget {
                     time: DateFormat('HH:mm').format(entry.date) + ' WIB',
                     status: entry.status,
                     isDraft: entry.isDraft,
+                    isInProgress: entry.isInProgress,
                     isApproved: entry.isApproved,
                     onTap: () => onEdit(entry),
                   ),
@@ -351,12 +368,19 @@ class _DashboardContent extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.search_off_rounded, size: 48, color: DashboardPage._mutedText.withOpacity(0.3)),
+              Icon(
+                Icons.search_off_rounded,
+                size: 48,
+                color: DashboardPage._mutedText.withOpacity(0.3),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Tidak ditemukan hasil untuk "$searchQuery"',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: DashboardPage._mutedText, fontSize: 13),
+                style: const TextStyle(
+                  color: DashboardPage._mutedText,
+                  fontSize: 13,
+                ),
               ),
             ],
           ),
@@ -367,11 +391,19 @@ class _DashboardContent extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.description_outlined, size: 48, color: DashboardPage._mutedText.withOpacity(0.3)),
+          Icon(
+            Icons.description_outlined,
+            size: 48,
+            color: DashboardPage._mutedText.withOpacity(0.3),
+          ),
           const SizedBox(height: 16),
           const Text(
             'Belum ada Berita Acara',
-            style: TextStyle(color: DashboardPage._mutedText, fontSize: 14, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: DashboardPage._mutedText,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
@@ -384,6 +416,9 @@ class _WelcomeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final LoginController controller = Get.find<LoginController>();
+    final role = controller.role.value;
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -407,11 +442,11 @@ class _WelcomeCard extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Selamat Datang',
                   style: TextStyle(
                     color: DashboardPage._mutedText,
@@ -420,14 +455,14 @@ class _WelcomeCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Supervisor Hatchery',
-                  style: TextStyle(
+                  role,
+                  style: const TextStyle(
                     color: DashboardPage._darkBlue,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                Text(
+                const Text(
                   'Semoga harimu produktif!',
                   style: TextStyle(
                     color: DashboardPage._mutedText,
@@ -530,13 +565,14 @@ class _StatCard extends StatelessWidget {
     required this.valueColor,
     required this.iconBackground,
   }) : assert(
-         svgAsset != null || icon != null,
-         'Either svgAsset or icon must be provided',
-       );
+        svgAsset != null || icon != null,
+        'Either svgAsset or icon must be provided',
+      );
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: 135,
       constraints: const BoxConstraints(minHeight: 50),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       decoration: BoxDecoration(
@@ -684,53 +720,57 @@ class _LatestHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 side: const BorderSide(color: Color(0xFFE7ECF3)),
               ),
-              itemBuilder: (context) => ['Semua', 'Draft', 'Selesai']
-                  .map(
-                    (status) => PopupMenuItem(
-                      value: status,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: selectedStatus == status
-                              ? DashboardPage._blue.withOpacity(0.1)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              status == 'Semua'
-                                  ? Icons.list_alt
-                                  : (status == 'Draft'
-                                        ? Icons.edit_note
-                                        : Icons.check_circle_outline),
-                              size: 18,
+              itemBuilder: (context) =>
+                  ['Semua', 'Draft', 'In Progress', 'Selesai']
+                      .map(
+                        (status) => PopupMenuItem(
+                          value: status,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
                               color: selectedStatus == status
-                                  ? DashboardPage._blue
-                                  : DashboardPage._mutedText,
+                                  ? DashboardPage._blue.withOpacity(0.1)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            const SizedBox(width: 12),
-                            Text(
-                              status,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: selectedStatus == status
-                                    ? FontWeight.w700
-                                    : FontWeight.w500,
-                                color: selectedStatus == status
-                                    ? DashboardPage._blue
-                                    : DashboardPage._darkBlue,
-                              ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  status == 'Semua'
+                                      ? Icons.list_alt
+                                      : (status == 'Draft'
+                                            ? Icons.edit_note
+                                            : (status == 'In Progress'
+                                                  ? Icons.sync_rounded
+                                                  : Icons
+                                                        .check_circle_outline)),
+                                  size: 18,
+                                  color: selectedStatus == status
+                                      ? DashboardPage._blue
+                                      : DashboardPage._mutedText,
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  status,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: selectedStatus == status
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: selectedStatus == status
+                                        ? DashboardPage._blue
+                                        : DashboardPage._darkBlue,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
-                      ),
-                    ),
-                  )
-                  .toList(),
+                      )
+                      .toList(),
               child: Container(
                 width: 42,
                 height: _searchBarHeight,
@@ -772,6 +812,7 @@ class _BaListItem extends StatelessWidget {
   final String time;
   final String status;
   final bool isDraft;
+  final bool isInProgress;
   final bool isApproved;
   final VoidCallback? onTap;
 
@@ -782,24 +823,32 @@ class _BaListItem extends StatelessWidget {
     required this.time,
     required this.status,
     required this.isDraft,
+    this.isInProgress = false,
     this.isApproved = false,
     this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    Color statusColor = isDraft
-        ? const Color(0xFFFF9700)
-        : const Color(0xFF008CFF);
-    Color statusBackground = isDraft
-        ? const Color(0xFFFFF1DE)
-        : const Color(0xFFEAF5FF);
+    Color statusColor;
+    Color statusBackground;
     String displayStatus = status;
 
     if (isApproved) {
       statusColor = const Color(0xFF10A83A);
       statusBackground = const Color(0xFFE8F9EE);
       displayStatus = 'Approved';
+    } else if (isInProgress) {
+      statusColor = DashboardPage._cyan;
+      statusBackground = const Color(0xFFDEFCFE);
+      displayStatus = 'In Progress';
+    } else if (isDraft) {
+      statusColor = const Color(0xFFFF9700);
+      statusBackground = const Color(0xFFFFF2DF);
+      displayStatus = 'Draft';
+    } else {
+      statusColor = const Color(0xFF008CFF);
+      statusBackground = const Color(0xFFEAF5FF);
     }
 
     return InkWell(
@@ -887,7 +936,7 @@ class _BaListItem extends StatelessWidget {
             ),
             const SizedBox(width: 6),
             SizedBox(
-              width: 75,
+              width: 82,
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 11,

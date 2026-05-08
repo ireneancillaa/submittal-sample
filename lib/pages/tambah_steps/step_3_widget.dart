@@ -18,8 +18,9 @@ class _Step3WidgetState extends State<Step3Widget> {
   static const Color _primaryBlue = Color(0xFF008CFF);
   static const Color _darkBlue = Color(0xFF002A56);
   static const Color _mutedText = Color(0xFF68748A);
+  static const Color _red = Color(0xFFEF4444);
 
-  Future<void> _selectDate(BuildContext context, TextEditingController textController) async {
+  Future<void> _selectDate(BuildContext context, TextEditingController textController, VoidCallback? onSelected) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -40,6 +41,7 @@ class _Step3WidgetState extends State<Step3Widget> {
     );
     if (picked != null) {
       textController.text = DateFormat('dd/MM/yyyy').format(picked);
+      onSelected?.call();
     }
   }
 
@@ -64,175 +66,230 @@ class _Step3WidgetState extends State<Step3Widget> {
       _batchController.clear();
     }
 
+    Map<String, String?> errors = {};
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    data != null ? 'Edit Vaksin' : 'Tambah Vaksin',
-                    style: const TextStyle(color: _darkBlue, fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
-                      child: const Icon(Icons.close, size: 20, color: Colors.grey),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Flexible(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildModalLabel('1. Merek vaksin'),
-                      _buildModalTextField('Merek vaksin', _merekController),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildModalLabel('2. Jumlah pemakaian'),
-                                _buildModalTextField('0', _pakaiController, suffix: 'vial', isNumber: true, onChanged: (v) => setModalState(() {})),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildModalLabel('3. Vaksin masuk'),
-                                _buildModalTextField('0', _masukController, suffix: 'vial', isNumber: true, onChanged: (v) => setModalState(() {})),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildModalLabel('4. Sisa stok (otomatis)'),
-                                _buildModalReadOnlyField(
-                                  ((int.tryParse(_masukController.text) ?? 0) - (int.tryParse(_pakaiController.text) ?? 0)).toString(),
-                                  suffix: 'vial',
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildModalLabel('5. Tanggal expired'),
-                                _buildModalTextField(
-                                  'Tanggal expired',
-                                  _expiredController,
-                                  icon: Icons.calendar_today_outlined,
-                                  readOnly: true,
-                                  onTap: () => _selectDate(context, _expiredController),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      _buildModalLabel('6. Batch'),
-                      _buildModalTextField('Nomor Batch', _batchController),
-                      const SizedBox(height: 16),
-                      _buildModalLabel('7. Upload foto label vaksin (opsional)'),
-                      _buildImageUploadPlaceholder(),
-                      const SizedBox(height: 24),
-                    ],
+        builder: (context, setModalState) {
+          bool validate() {
+            setModalState(() {
+              errors.clear();
+              if (_merekController.text.isEmpty) errors['merek'] = 'Merek vaksin harus diisi';
+              if (_pakaiController.text.isEmpty) errors['pakai'] = 'Jumlah harus diisi';
+              if (_masukController.text.isEmpty) errors['masuk'] = 'Jumlah harus diisi';
+              if (_expiredController.text.isEmpty) errors['expired'] = 'Tanggal expired harus diisi';
+              if (_batchController.text.isEmpty) errors['batch'] = 'Nomor batch harus diisi';
+            });
+            return errors.isEmpty;
+          }
+
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Row(
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: _primaryBlue,
-                          side: const BorderSide(color: _primaryBlue),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w700)),
-                      ),
+                    Text(
+                      data != null ? 'Edit Vaksin' : 'Tambah Vaksin',
+                      style: const TextStyle(color: _darkBlue, fontSize: 16, fontWeight: FontWeight.w700),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final newData = VaksinData(
-                            name: _merekController.text,
-                            pemakaian: '${_pakaiController.text} vial',
-                            masuk: '${_masukController.text} vial',
-                            sisa: '${(int.tryParse(_masukController.text) ?? 0) - (int.tryParse(_pakaiController.text) ?? 0)} vial',
-                            expired: _expiredController.text,
-                            batch: _batchController.text,
-                            isExpired: false,
-                          );
-                          if (index != null) {
-                            controller.vaksinList[index] = newData;
-                          } else {
-                            controller.vaksinList.add(newData);
-                          }
-                          Navigator.pop(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _primaryBlue,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
+                        child: const Icon(Icons.close, size: 20, color: Colors.grey),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-        ),
+                const SizedBox(height: 24),
+                Flexible(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildModalLabel('1. Merek vaksin'),
+                        _buildModalTextField(
+                          'Merek vaksin', 
+                          _merekController,
+                          errorText: errors['merek'],
+                          onChanged: (_) {
+                            if (errors['merek'] != null) setModalState(() => errors['merek'] = null);
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildModalLabel('2. Jumlah pemakaian'),
+                                  _buildModalTextField(
+                                    '0', 
+                                    _pakaiController, 
+                                    suffix: 'vial', 
+                                    isNumber: true, 
+                                    errorText: errors['pakai'],
+                                    onChanged: (v) => setModalState(() {
+                                      errors['pakai'] = null;
+                                    }),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildModalLabel('3. Vaksin masuk'),
+                                  _buildModalTextField(
+                                    '0', 
+                                    _masukController, 
+                                    suffix: 'vial', 
+                                    isNumber: true, 
+                                    errorText: errors['masuk'],
+                                    onChanged: (v) => setModalState(() {
+                                      errors['masuk'] = null;
+                                    }),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildModalLabel('4. Sisa stok (otomatis)'),
+                                  _buildModalReadOnlyField(
+                                    ((int.tryParse(_masukController.text) ?? 0) - (int.tryParse(_pakaiController.text) ?? 0)).toString(),
+                                    suffix: 'vial',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildModalLabel('5. Tanggal expired'),
+                                  _buildModalTextField(
+                                    'Tanggal expired',
+                                    _expiredController,
+                                    icon: Icons.calendar_today_outlined,
+                                    readOnly: true,
+                                    errorText: errors['expired'],
+                                    onTap: () => _selectDate(context, _expiredController, () {
+                                      setModalState(() => errors['expired'] = null);
+                                    }),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildModalLabel('6. Batch'),
+                        _buildModalTextField(
+                          'Nomor Batch', 
+                          _batchController,
+                          errorText: errors['batch'],
+                          onChanged: (_) {
+                            if (errors['batch'] != null) setModalState(() => errors['batch'] = null);
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildModalLabel('7. Upload foto label vaksin (opsional)'),
+                        _buildImageUploadPlaceholder(),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: _primaryBlue,
+                            side: const BorderSide(color: _primaryBlue),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (validate()) {
+                              final newData = VaksinData(
+                                name: _merekController.text,
+                                pemakaian: '${_pakaiController.text} vial',
+                                masuk: '${_masukController.text} vial',
+                                sisa: '${(int.tryParse(_masukController.text) ?? 0) - (int.tryParse(_pakaiController.text) ?? 0)} vial',
+                                expired: _expiredController.text,
+                                batch: _batchController.text,
+                                isExpired: false,
+                              );
+                              if (index != null) {
+                                controller.vaksinList[index] = newData;
+                              } else {
+                                controller.vaksinList.add(newData);
+                              }
+                              Navigator.pop(context);
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _primaryBlue,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -433,40 +490,53 @@ class _Step3WidgetState extends State<Step3Widget> {
     );
   }
 
-  Widget _buildModalTextField(String hint, TextEditingController textController, {String? suffix, IconData? icon, bool isNumber = false, ValueChanged<String>? onChanged, bool readOnly = false, VoidCallback? onTap}) {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 44),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE7EEF8)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (icon != null) ...[Icon(icon, size: 18, color: const Color(0xFF68748A)), const SizedBox(width: 12)],
-          Expanded(
-            child: TextFormField(
-              controller: textController,
-              keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-              onChanged: onChanged,
-              readOnly: readOnly,
-              onTap: onTap,
-              maxLines: isNumber ? 1 : null,
-              style: const TextStyle(color: Color(0xFF002A56), fontSize: 13, fontWeight: FontWeight.w600),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w400),
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
+  Widget _buildModalTextField(String hint, TextEditingController textController, {String? suffix, IconData? icon, bool isNumber = false, ValueChanged<String>? onChanged, bool readOnly = false, VoidCallback? onTap, String? errorText}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: errorText != null ? _red : const Color(0xFFE7EEF8)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (icon != null) ...[Icon(icon, size: 18, color: const Color(0xFF68748A)), const SizedBox(width: 12)],
+              Expanded(
+                child: TextFormField(
+                  controller: textController,
+                  keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+                  onChanged: onChanged,
+                  readOnly: readOnly,
+                  onTap: onTap,
+                  maxLines: isNumber ? 1 : null,
+                  style: const TextStyle(color: Color(0xFF002A56), fontSize: 13, fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w400),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
               ),
+              if (suffix != null) Text(suffix, style: const TextStyle(color: Color(0xFF68748A), fontSize: 12, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 4),
+            child: Text(
+              errorText,
+              style: const TextStyle(color: _red, fontSize: 10, fontWeight: FontWeight.w500),
             ),
           ),
-          if (suffix != null) Text(suffix, style: const TextStyle(color: Color(0xFF68748A), fontSize: 12, fontWeight: FontWeight.w600)),
-        ],
-      ),
+      ],
     );
   }
 

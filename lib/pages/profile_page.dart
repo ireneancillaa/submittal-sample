@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../controllers/login_controller.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
+
+  LoginController get controller => Get.find<LoginController>();
 
   static const Color _primaryBlue = Color(0xFF008CFF);
   static const Color _darkBlue = Color(0xFF002A56);
@@ -10,21 +14,30 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          _buildProfileCard(),
-          const SizedBox(height: 24),
-          _buildMenuSection(),
-        ],
+    // Obx membungkus UI agar data reaktif (division, role, dll) terupdate otomatis
+    return Obx(
+      () => SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildProfileCard(),
+            const SizedBox(height: 24),
+            _buildMenuSection(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildProfileCard() {
+    // Mengambil data dari controller
+    final user = controller.userModel.value;
+    final ldapId = user?.ldapid ?? "-";
+    final division = controller.division.value;
+    final role = controller.role.value;
+    final email = controller.firebaseEmail.value;
+
     return Column(
       children: [
-        // Profile & Info Card
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
@@ -44,8 +57,8 @@ class ProfilePage extends StatelessWidget {
                           Container(
                             width: 72,
                             height: 72,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFE7F2FF),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFE7F2FF),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -84,9 +97,9 @@ class ProfilePage extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Supervisor Hatchery',
-                              style: TextStyle(
+                            Text(
+                              role, 
+                              style: const TextStyle(
                                 color: _darkBlue,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
@@ -94,8 +107,8 @@ class ProfilePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Hatchery Operations',
-                              style: TextStyle(
+                              division, 
+                              style: const TextStyle(
                                 color: _mutedText,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w500,
@@ -103,8 +116,8 @@ class ProfilePage extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'ID: CPI-HT-0231',
-                              style: TextStyle(
+                              'ID: $ldapId', 
+                              style: const TextStyle(
                                 color: _mutedText,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
@@ -120,9 +133,9 @@ class ProfilePage extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 6),
                                 Expanded(
-                                  child: const Text(
-                                    'supervisor.hatchery@cp.co.id',
-                                    style: TextStyle(
+                                  child: Text(
+                                    email, // Email dari Firebase
+                                    style: const TextStyle(
                                       color: _mutedText,
                                       fontSize: 10,
                                       fontWeight: FontWeight.w500,
@@ -145,7 +158,10 @@ class ProfilePage extends StatelessWidget {
                       onPressed: () {},
                       style: OutlinedButton.styleFrom(
                         foregroundColor: _primaryBlue,
-                        side: BorderSide(color: _primaryBlue.withOpacity(0.2), width: 1),
+                        side: BorderSide(
+                          color: _primaryBlue.withOpacity(0.2),
+                          width: 1,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -158,20 +174,20 @@ class ProfilePage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Divider(color: const Color(0xFFE7EEF8), height: 1, thickness: 1),
+              const Divider(color: Color(0xFFE7EEF8), height: 1, thickness: 1),
               const SizedBox(height: 16),
               Column(
                 children: [
                   _buildInfoCard(
                     icon: Icons.apartment_rounded,
                     label: 'Cabang',
-                    value: 'Hatchery Broiler',
+                    value: 'Hatchery Broiler', // Division dari Firebase
                   ),
                   const SizedBox(height: 12),
                   _buildInfoCard(
                     icon: Icons.badge_rounded,
                     label: 'Role',
-                    value: 'Supervisor',
+                    value: role, // Role dari Firebase
                   ),
                   const SizedBox(height: 12),
                   _buildInfoCard(
@@ -215,8 +231,8 @@ class ProfilePage extends StatelessWidget {
           Container(
             width: 30,
             height: 30,
-            decoration: BoxDecoration(
-              color: const Color(0xFFE7F2FF),
+            decoration: const BoxDecoration(
+              color: Color(0xFFE7F2FF),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 20, color: valueColor ?? _primaryBlue),
@@ -231,7 +247,7 @@ class ProfilePage extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: _mutedText,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -304,7 +320,9 @@ class ProfilePage extends StatelessWidget {
             icon: Icons.logout,
             title: 'Keluar',
             titleColor: _redAccent,
-            onTap: () {},
+            onTap: () {
+              Get.offAllNamed('/login'); // Logout kembali ke login page
+            },
           ),
         ]),
       ],
