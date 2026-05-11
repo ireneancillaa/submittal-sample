@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import '../../controllers/berita_acara_controller.dart';
 import '../../widgets/dashed_border.dart';
@@ -14,13 +17,134 @@ class Step3Widget extends StatefulWidget {
 }
 
 class _Step3WidgetState extends State<Step3Widget> {
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> _pickLabelImage(Function setModalState) async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 42,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE2E8F0),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE7F2FF),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.image_outlined,
+                        color: _primaryBlue,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pilih Sumber Foto',
+                            style: TextStyle(
+                              color: _darkBlue,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Upload foto label vaksin dari kamera atau galeri',
+                            style: TextStyle(
+                              color: _mutedText,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildImageSourceCard(
+                        icon: Icons.camera_alt_outlined,
+                        title: 'Kamera',
+                        subtitle: 'Ambil foto langsung',
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final XFile? image = await _picker.pickImage(
+                            source: ImageSource.camera,
+                            imageQuality: 50,
+                          );
+                          if (image != null) {
+                            controller.fotoLabelVaksin.value = image.path;
+                            setModalState(() {});
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: _buildImageSourceCard(
+                        icon: Icons.photo_library_outlined,
+                        title: 'Galeri',
+                        subtitle: 'Pilih dari perangkat',
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final XFile? image = await _picker.pickImage(
+                            source: ImageSource.gallery,
+                            imageQuality: 50,
+                          );
+                          if (image != null) {
+                            controller.fotoLabelVaksin.value = image.path;
+                            setModalState(() {});
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   BeritaAcaraController get controller => Get.find<BeritaAcaraController>();
   static const Color _primaryBlue = Color(0xFF008CFF);
   static const Color _darkBlue = Color(0xFF002A56);
   static const Color _mutedText = Color(0xFF68748A);
   static const Color _red = Color(0xFFEF4444);
 
-  Future<void> _selectDate(BuildContext context, TextEditingController textController, VoidCallback? onSelected) async {
+  Future<void> _selectDate(
+    BuildContext context,
+    TextEditingController textController,
+    VoidCallback? onSelected,
+  ) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
@@ -77,11 +201,21 @@ class _Step3WidgetState extends State<Step3Widget> {
           bool validate() {
             setModalState(() {
               errors.clear();
-              if (_merekController.text.isEmpty) errors['merek'] = 'Merek vaksin harus diisi';
-              if (_pakaiController.text.isEmpty) errors['pakai'] = 'Jumlah harus diisi';
-              if (_masukController.text.isEmpty) errors['masuk'] = 'Jumlah harus diisi';
-              if (_expiredController.text.isEmpty) errors['expired'] = 'Tanggal expired harus diisi';
-              if (_batchController.text.isEmpty) errors['batch'] = 'Nomor batch harus diisi';
+              if (_merekController.text.isEmpty) {
+                errors['merek'] = 'Merek vaksin harus diisi';
+              }
+              if (_pakaiController.text.isEmpty) {
+                errors['pakai'] = 'Jumlah harus diisi';
+              }
+              if (_masukController.text.isEmpty) {
+                errors['masuk'] = 'Jumlah harus diisi';
+              }
+              if (_expiredController.text.isEmpty) {
+                errors['expired'] = 'Tanggal expired harus diisi';
+              }
+              if (_batchController.text.isEmpty) {
+                errors['batch'] = 'Nomor batch harus diisi';
+              }
             });
             return errors.isEmpty;
           }
@@ -91,7 +225,12 @@ class _Step3WidgetState extends State<Step3Widget> {
               color: Colors.white,
               borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
             ),
-            padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(context).viewInsets.bottom + 20),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              MediaQuery.of(context).viewInsets.bottom + 20,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -109,14 +248,25 @@ class _Step3WidgetState extends State<Step3Widget> {
                   children: [
                     Text(
                       data != null ? 'Edit Vaksin' : 'Tambah Vaksin',
-                      style: const TextStyle(color: _darkBlue, fontSize: 16, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        color: _darkBlue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
                         padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: Colors.grey[100], shape: BoxShape.circle),
-                        child: const Icon(Icons.close, size: 20, color: Colors.grey),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.close,
+                          size: 20,
+                          color: Colors.grey,
+                        ),
                       ),
                     ),
                   ],
@@ -130,11 +280,13 @@ class _Step3WidgetState extends State<Step3Widget> {
                       children: [
                         _buildModalLabel('1. Merek vaksin'),
                         _buildModalTextField(
-                          'Merek vaksin', 
+                          'Merek vaksin',
                           _merekController,
                           errorText: errors['merek'],
                           onChanged: (_) {
-                            if (errors['merek'] != null) setModalState(() => errors['merek'] = null);
+                            if (errors['merek'] != null) {
+                              setModalState(() => errors['merek'] = null);
+                            }
                           },
                         ),
                         const SizedBox(height: 16),
@@ -147,10 +299,10 @@ class _Step3WidgetState extends State<Step3Widget> {
                                 children: [
                                   _buildModalLabel('2. Jumlah pemakaian'),
                                   _buildModalTextField(
-                                    '0', 
-                                    _pakaiController, 
-                                    suffix: 'vial', 
-                                    isNumber: true, 
+                                    '0',
+                                    _pakaiController,
+                                    suffix: 'vial',
+                                    isNumber: true,
                                     errorText: errors['pakai'],
                                     onChanged: (v) => setModalState(() {
                                       errors['pakai'] = null;
@@ -166,10 +318,10 @@ class _Step3WidgetState extends State<Step3Widget> {
                                 children: [
                                   _buildModalLabel('3. Vaksin masuk'),
                                   _buildModalTextField(
-                                    '0', 
-                                    _masukController, 
-                                    suffix: 'vial', 
-                                    isNumber: true, 
+                                    '0',
+                                    _masukController,
+                                    suffix: 'vial',
+                                    isNumber: true,
                                     errorText: errors['masuk'],
                                     onChanged: (v) => setModalState(() {
                                       errors['masuk'] = null;
@@ -190,7 +342,13 @@ class _Step3WidgetState extends State<Step3Widget> {
                                 children: [
                                   _buildModalLabel('4. Sisa stok (otomatis)'),
                                   _buildModalReadOnlyField(
-                                    ((int.tryParse(_masukController.text) ?? 0) - (int.tryParse(_pakaiController.text) ?? 0)).toString(),
+                                    ((int.tryParse(_masukController.text) ??
+                                                0) -
+                                            (int.tryParse(
+                                                  _pakaiController.text,
+                                                ) ??
+                                                0))
+                                        .toString(),
                                     suffix: 'vial',
                                   ),
                                 ],
@@ -208,9 +366,15 @@ class _Step3WidgetState extends State<Step3Widget> {
                                     icon: Icons.calendar_today_outlined,
                                     readOnly: true,
                                     errorText: errors['expired'],
-                                    onTap: () => _selectDate(context, _expiredController, () {
-                                      setModalState(() => errors['expired'] = null);
-                                    }),
+                                    onTap: () => _selectDate(
+                                      context,
+                                      _expiredController,
+                                      () {
+                                        setModalState(
+                                          () => errors['expired'] = null,
+                                        );
+                                      },
+                                    ),
                                   ),
                                 ],
                               ),
@@ -220,16 +384,75 @@ class _Step3WidgetState extends State<Step3Widget> {
                         const SizedBox(height: 16),
                         _buildModalLabel('6. Batch'),
                         _buildModalTextField(
-                          'Nomor Batch', 
+                          'Nomor Batch',
                           _batchController,
                           errorText: errors['batch'],
                           onChanged: (_) {
-                            if (errors['batch'] != null) setModalState(() => errors['batch'] = null);
+                            if (errors['batch'] != null) {
+                              setModalState(() => errors['batch'] = null);
+                            }
                           },
                         ),
                         const SizedBox(height: 16),
-                        _buildModalLabel('7. Upload foto label vaksin (opsional)'),
-                        _buildImageUploadPlaceholder(),
+                        _buildModalLabel(
+                          '7. Upload foto label vaksin (opsional)',
+                        ),
+                        Obx(
+                          () => GestureDetector(
+                            onTap: () => _pickLabelImage(setModalState),
+                            child: Container(
+                              width: double.infinity,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFD),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: const Color(0xFFE2E8F0),
+                                ),
+                                image:
+                                    controller.fotoLabelVaksin.value.isNotEmpty
+                                    ? DecorationImage(
+                                        image: FileImage(
+                                          File(
+                                            controller.fotoLabelVaksin.value,
+                                          ),
+                                        ),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
+                              ),
+                              child: controller.fotoLabelVaksin.value.isEmpty
+                                  ? Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.camera_alt_outlined,
+                                          color: _primaryBlue,
+                                          size: 32,
+                                        ),
+                                        const SizedBox(height: 8),
+                                        const Text(
+                                          'Tap untuk upload/ganti foto label',
+                                          style: TextStyle(
+                                            color: Color(0xFF64748B),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          'PNG, JPG maks. 5MB',
+                                          style: const TextStyle(
+                                            color: _mutedText,
+                                            fontSize: 9,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  : null,
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 24),
                       ],
                     ),
@@ -245,10 +468,15 @@ class _Step3WidgetState extends State<Step3Widget> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: _primaryBlue,
                             side: const BorderSide(color: _primaryBlue),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: const Text('Batal', style: TextStyle(fontWeight: FontWeight.w700)),
+                          child: const Text(
+                            'Batal',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -260,7 +488,8 @@ class _Step3WidgetState extends State<Step3Widget> {
                                 name: _merekController.text,
                                 pemakaian: '${_pakaiController.text} vial',
                                 masuk: '${_masukController.text} vial',
-                                sisa: '${(int.tryParse(_masukController.text) ?? 0) - (int.tryParse(_pakaiController.text) ?? 0)} vial',
+                                sisa:
+                                    '${(int.tryParse(_masukController.text) ?? 0) - (int.tryParse(_pakaiController.text) ?? 0)} vial',
                                 expired: _expiredController.text,
                                 batch: _batchController.text,
                                 isExpired: false,
@@ -277,10 +506,15 @@ class _Step3WidgetState extends State<Step3Widget> {
                             backgroundColor: _primaryBlue,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: const Text('Simpan', style: TextStyle(fontWeight: FontWeight.w700)),
+                          child: const Text(
+                            'Simpan',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
                         ),
                       ),
                     ],
@@ -296,31 +530,42 @@ class _Step3WidgetState extends State<Step3Widget> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle(
-          icon: Icons.vaccines_outlined,
-          title: 'Pemakaian Vaksin',
-          subtitle: 'Input data vaksin lebih mudah dengan form modal',
-        ),
-        const SizedBox(height: 16),
-        _buildInfoBanner(),
-        const SizedBox(height: 12),
-        _buildTambahButton(),
-        const SizedBox(height: 12),
-        ...controller.vaksinList.asMap().entries.map((entry) => _buildVaksinCard(entry.value, entry.key)),
-        const SizedBox(height: 12),
-      ],
-    ));
+    return Obx(
+      () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle(
+            icon: Icons.vaccines_outlined,
+            title: 'Pemakaian Vaksin',
+            subtitle: 'Input data vaksin lebih mudah dengan form modal',
+          ),
+          const SizedBox(height: 16),
+          _buildInfoBanner(),
+          const SizedBox(height: 12),
+          _buildTambahButton(),
+          const SizedBox(height: 12),
+          ...controller.vaksinList.asMap().entries.map(
+            (entry) => _buildVaksinCard(entry.value, entry.key),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
   }
 
-  Widget _buildSectionTitle({required IconData icon, required String title, required String subtitle}) {
+  Widget _buildSectionTitle({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(color: const Color(0xFFE7F2FF), borderRadius: BorderRadius.circular(14)),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE7F2FF),
+            borderRadius: BorderRadius.circular(14),
+          ),
           child: Icon(icon, color: _primaryBlue, size: 24),
         ),
         const SizedBox(width: 16),
@@ -328,8 +573,22 @@ class _Step3WidgetState extends State<Step3Widget> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: const TextStyle(color: _darkBlue, fontSize: 16, fontWeight: FontWeight.w700)),
-              Text(subtitle, style: const TextStyle(color: _mutedText, fontSize: 10, fontWeight: FontWeight.w500)),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: _darkBlue,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  color: _mutedText,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
         ),
@@ -352,7 +611,11 @@ class _Step3WidgetState extends State<Step3Widget> {
           Expanded(
             child: Text(
               'Input lewat modal lebih mudah di layar kecil',
-              style: TextStyle(color: _mutedText, fontSize: 11, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: _mutedText,
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           Icon(Icons.close, color: _mutedText, size: 14),
@@ -378,12 +641,16 @@ class _Step3WidgetState extends State<Step3Widget> {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: data.isExpired ? const Color(0xFFFFEAEA) : const Color(0xFFE7F2FF),
+                  color: data.isExpired
+                      ? const Color(0xFFFFEAEA)
+                      : const Color(0xFFE7F2FF),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   Icons.medication_rounded,
-                  color: data.isExpired ? const Color(0xFFE74C3C) : _primaryBlue,
+                  color: data.isExpired
+                      ? const Color(0xFFE74C3C)
+                      : _primaryBlue,
                   size: 20,
                 ),
               ),
@@ -412,18 +679,40 @@ class _Step3WidgetState extends State<Step3Widget> {
                   ],
                 ),
               ),
-              _buildIconAction(Icons.edit_outlined, const Color(0xFFF1F5F9), _mutedText, () => _showTambahVaksinModal(index: index, data: data)),
+              _buildIconAction(
+                Icons.edit_outlined,
+                const Color(0xFFF1F5F9),
+                _mutedText,
+                () => _showTambahVaksinModal(index: index, data: data),
+              ),
               const SizedBox(width: 8),
-              _buildIconAction(Icons.delete_outline_rounded, const Color(0xFFFFEAEA), const Color(0xFFE74C3C), () => controller.vaksinList.removeAt(index)),
+              _buildIconAction(
+                Icons.delete_outline_rounded,
+                const Color(0xFFFFEAEA),
+                const Color(0xFFE74C3C),
+                () => controller.vaksinList.removeAt(index),
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _buildDetailItem('Terpakai', data.pemakaian, _darkBlue)),
-              Expanded(child: _buildDetailItem('Vial Masuk', data.masuk, _darkBlue)),
-              Expanded(child: _buildDetailItem('Sisa', data.sisa, _primaryBlue)),
-              Expanded(child: _buildDetailItem('Expired', data.expired, data.isExpired ? const Color(0xFFE74C3C) : _mutedText)),
+              Expanded(
+                child: _buildDetailItem('Terpakai', data.pemakaian, _darkBlue),
+              ),
+              Expanded(
+                child: _buildDetailItem('Vial Masuk', data.masuk, _darkBlue),
+              ),
+              Expanded(
+                child: _buildDetailItem('Sisa', data.sisa, _primaryBlue),
+              ),
+              Expanded(
+                child: _buildDetailItem(
+                  'Expired',
+                  data.expired,
+                  data.isExpired ? const Color(0xFFE74C3C) : _mutedText,
+                ),
+              ),
             ],
           ),
         ],
@@ -431,12 +720,20 @@ class _Step3WidgetState extends State<Step3Widget> {
     );
   }
 
-  Widget _buildIconAction(IconData icon, Color bg, Color color, VoidCallback onTap) {
+  Widget _buildIconAction(
+    IconData icon,
+    Color bg,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Icon(icon, color: color, size: 18),
       ),
     );
@@ -475,6 +772,57 @@ class _Step3WidgetState extends State<Step3Widget> {
     );
   }
 
+  Widget _buildImageSourceCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8FAFD),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 54,
+              height: 54,
+              decoration: BoxDecoration(
+                color: const Color(0xFFE7F2FF),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: _primaryBlue, size: 28),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              title,
+              style: const TextStyle(
+                color: _darkBlue,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: _mutedText,
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // Modal Helpers
   Widget _buildModalLabel(String text) {
     return Padding(
@@ -490,7 +838,17 @@ class _Step3WidgetState extends State<Step3Widget> {
     );
   }
 
-  Widget _buildModalTextField(String hint, TextEditingController textController, {String? suffix, IconData? icon, bool isNumber = false, ValueChanged<String>? onChanged, bool readOnly = false, VoidCallback? onTap, String? errorText}) {
+  Widget _buildModalTextField(
+    String hint,
+    TextEditingController textController, {
+    String? suffix,
+    IconData? icon,
+    bool isNumber = false,
+    ValueChanged<String>? onChanged,
+    bool readOnly = false,
+    VoidCallback? onTap,
+    String? errorText,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -500,31 +858,54 @@ class _Step3WidgetState extends State<Step3Widget> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: errorText != null ? _red : const Color(0xFFE7EEF8)),
+            border: Border.all(
+              color: errorText != null ? _red : const Color(0xFFE7EEF8),
+            ),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              if (icon != null) ...[Icon(icon, size: 18, color: const Color(0xFF68748A)), const SizedBox(width: 12)],
+              if (icon != null) ...[
+                Icon(icon, size: 18, color: const Color(0xFF68748A)),
+                const SizedBox(width: 12),
+              ],
               Expanded(
                 child: TextFormField(
                   controller: textController,
-                  keyboardType: isNumber ? TextInputType.number : TextInputType.text,
+                  keyboardType: isNumber
+                      ? TextInputType.number
+                      : TextInputType.text,
                   onChanged: onChanged,
                   readOnly: readOnly,
                   onTap: onTap,
                   maxLines: isNumber ? 1 : null,
-                  style: const TextStyle(color: Color(0xFF002A56), fontSize: 13, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Color(0xFF002A56),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                   decoration: InputDecoration(
                     hintText: hint,
-                    hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13, fontWeight: FontWeight.w400),
+                    hintStyle: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                    ),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
-              if (suffix != null) Text(suffix, style: const TextStyle(color: Color(0xFF68748A), fontSize: 12, fontWeight: FontWeight.w600)),
+              if (suffix != null)
+                Text(
+                  suffix,
+                  style: const TextStyle(
+                    color: Color(0xFF68748A),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
             ],
           ),
         ),
@@ -533,7 +914,11 @@ class _Step3WidgetState extends State<Step3Widget> {
             padding: const EdgeInsets.only(top: 4, left: 4),
             child: Text(
               errorText,
-              style: const TextStyle(color: _red, fontSize: 10, fontWeight: FontWeight.w500),
+              style: const TextStyle(
+                color: _red,
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
       ],
@@ -572,68 +957,6 @@ class _Step3WidgetState extends State<Step3Widget> {
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildImageUploadPlaceholder() {
-    return DashedContainer(
-      color: const Color(0xFFE2E8F0),
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                image: const DecorationImage(
-                  image: NetworkImage(
-                    'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80',
-                  ),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.cloud_upload_outlined, color: _primaryBlue, size: 24),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Tap untuk upload atau ganti foto',
-                              style: TextStyle(
-                                color: _mutedText,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const Text(
-                              'PNG, JPG maks. 5MB',
-                              style: TextStyle(color: _mutedText, fontSize: 9),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

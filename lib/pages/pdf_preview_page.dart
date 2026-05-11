@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
+
 import '../controllers/berita_acara_controller.dart';
 import '../services/pdf_generator_service.dart';
 
 class PdfPreviewPage extends StatelessWidget {
-  final BeritaAcaraController controller = Get.find<BeritaAcaraController>();
-
   PdfPreviewPage({super.key});
+
+  final BeritaAcaraController controller = Get.find<BeritaAcaraController>();
 
   @override
   Widget build(BuildContext context) {
@@ -31,14 +32,17 @@ class PdfPreviewPage extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Preparing PDF for sharing...')),
               );
+
               try {
                 final bytes = await PdfGeneratorService.generateBeritaAcara(
                   PdfPageFormat.a4,
                   controller: controller,
                 );
+
                 await Printing.sharePdf(
                   bytes: bytes,
-                  filename: '${controller.noBA.value.isEmpty ? 'BA-DRAFT' : controller.noBA.value}.pdf',
+                  filename:
+                      '${controller.noBA.value.isEmpty ? 'BA-DRAFT' : controller.noBA.value}.pdf',
                 );
               } catch (e) {
                 if (context.mounted) {
@@ -56,9 +60,14 @@ class PdfPreviewPage extends StatelessWidget {
           format,
           controller: controller,
         ),
-        useActions: false, // Hides the built-in toolbar as requested in the reference
         initialPageFormat: PdfPageFormat.a4,
         canChangePageFormat: false,
+        canChangeOrientation: false,
+        allowPrinting: false,
+        allowSharing: false,
+        canDebug: false,
+        pdfFileName:
+            '${controller.noBA.value.isEmpty ? 'BA-DRAFT' : controller.noBA.value}.pdf',
       ),
     );
   }

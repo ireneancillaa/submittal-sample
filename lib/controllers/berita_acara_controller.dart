@@ -28,10 +28,10 @@ class BeritaAcaraController extends GetxController {
     selectedDate.value = entry.date;
     customer.value = entry.customer;
     lokasi.value = entry.lokasi ?? '';
-    
+
     // Parse time from entry.date if needed, or use a default
     jamMulai.value = TimeOfDay.fromDateTime(entry.date);
-    
+
     if (entry.data != null) {
       final d = entry.data!;
       if (d['jamSelesai'] != null) {
@@ -56,6 +56,7 @@ class BeritaAcaraController extends GetxController {
   void toggleManualStartTime(bool manual) {
     isStartTimeManual.value = manual;
   }
+
   // Step 2: Data Umum
   var noBA = ''.obs;
   var selectedDate = DateTime.now().obs;
@@ -69,6 +70,7 @@ class BeritaAcaraController extends GetxController {
 
   // Step 3: Pemakaian Vaksin
   var vaksinList = <VaksinData>[].obs;
+  final fotoLabelVaksin = ''.obs;
 
   // Step 4: Penyimpanan
   var suhuShowcase = ''.obs;
@@ -212,14 +214,24 @@ class BeritaAcaraController extends GetxController {
   var approvedBy = ''.obs;
 
   // Helper getters for Step 11
-  String get formattedDate => DateFormat('d MMMM yyyy', 'id_ID').format(selectedDate.value);
-  
-  int get totalCulling => vaksinatorList.fold(0, (sum, item) => sum + item.jumlahCulling);
-  int get totalDOC => vaksinatorList.fold(0, (sum, item) => sum + item.jumlahDOC);
-  double get avgCullingPersen => totalDOC > 0 ? (totalCulling / totalDOC) * 100 : 0;
+  String get formattedDate =>
+      DateFormat('d MMMM yyyy', 'id_ID').format(selectedDate.value);
 
-  int get totalVialMasuk => vaksinList.fold(0, (sum, item) => sum + (int.tryParse(item.masuk.split(' ')[0]) ?? 0));
-  int get totalVialTerpakai => vaksinList.fold(0, (sum, item) => sum + (int.tryParse(item.pemakaian.split(' ')[0]) ?? 0));
+  int get totalCulling =>
+      vaksinatorList.fold(0, (sum, item) => sum + item.jumlahCulling);
+  int get totalDOC =>
+      vaksinatorList.fold(0, (sum, item) => sum + item.jumlahDOC);
+  double get avgCullingPersen =>
+      totalDOC > 0 ? (totalCulling / totalDOC) * 100 : 0;
+
+  int get totalVialMasuk => vaksinList.fold(
+    0,
+    (sum, item) => sum + (int.tryParse(item.masuk.split(' ')[0]) ?? 0),
+  );
+  int get totalVialTerpakai => vaksinList.fold(
+    0,
+    (sum, item) => sum + (int.tryParse(item.pemakaian.split(' ')[0]) ?? 0),
+  );
 
   Map<String, dynamic> toJson() {
     return {
@@ -228,21 +240,27 @@ class BeritaAcaraController extends GetxController {
       'customer': customer.value,
       'lokasi': lokasi.value,
       'jamMulai': '${jamMulai.value.hour}:${jamMulai.value.minute}',
-      'jamSelesai': jamSelesai.value != null ? '${jamSelesai.value!.hour}:${jamSelesai.value!.minute}' : null,
+      'jamSelesai': jamSelesai.value != null
+          ? '${jamSelesai.value!.hour}:${jamSelesai.value!.minute}'
+          : null,
       'boxTervaksin': boxTervaksin.value,
       'totalProduksi': totalProduksi.value,
       'deskripsiCheckOut': deskripsiCheckOut.value,
       'fotoCheckOut': pickedImageCheckOut.value?.path,
       'metode': activeTabSterilisasi.value == 'spray' ? 'Spray' : 'Subcutan',
       'vaksinList': vaksinList.map((v) => v.toMap()).toList(),
-      'vaksinatorList': vaksinatorList.map((v) => {
-        'nama': v.nama,
-        'jumlahDOC': v.jumlahDOC,
-        'cullingBasah': v.cullingBasah,
-        'cullingBerdarah': v.cullingBerdarah,
-        'cullingMati': v.cullingMati,
-        'gantiJarum': v.gantiJarum,
-      }).toList(),
+      'vaksinatorList': vaksinatorList
+          .map(
+            (v) => {
+              'nama': v.nama,
+              'jumlahDOC': v.jumlahDOC,
+              'cullingBasah': v.cullingBasah,
+              'cullingBerdarah': v.cullingBerdarah,
+              'cullingMati': v.cullingMati,
+              'gantiJarum': v.gantiJarum,
+            },
+          )
+          .toList(),
       // Add other fields as needed for a full save
     };
   }
@@ -252,42 +270,56 @@ class BeritaAcaraController extends GetxController {
     selectedDate.value = DateTime.parse(json['selectedDate']);
     customer.value = json['customer'] ?? '';
     lokasi.value = json['lokasi'] ?? '';
-    
+
     if (json['jamMulai'] != null) {
       final parts = json['jamMulai'].split(':');
-      jamMulai.value = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      jamMulai.value = TimeOfDay(
+        hour: int.parse(parts[0]),
+        minute: int.parse(parts[1]),
+      );
     }
-    
+
     if (json['jamSelesai'] != null) {
       final parts = json['jamSelesai'].split(':');
-      jamSelesai.value = TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
+      jamSelesai.value = TimeOfDay(
+        hour: int.parse(parts[0]),
+        minute: int.parse(parts[1]),
+      );
     }
 
     boxTervaksin.value = json['boxTervaksin'] ?? '';
     totalProduksi.value = json['totalProduksi'] ?? '';
     deskripsiCheckOut.value = json['deskripsiCheckOut'] ?? '';
-    
+
     if (json['fotoCheckOut'] != null) {
       pickedImageCheckOut.value = XFile(json['fotoCheckOut']);
     }
 
     if (json['metode'] != null) {
-      activeTabSterilisasi.value = json['metode'] == 'Spray' ? 'spray' : 'subcutan';
+      activeTabSterilisasi.value = json['metode'] == 'Spray'
+          ? 'spray'
+          : 'subcutan';
     }
 
     if (json['vaksinList'] != null) {
-      vaksinList.value = (json['vaksinList'] as List).map((v) => VaksinData.fromMap(v)).toList();
+      vaksinList.value = (json['vaksinList'] as List)
+          .map((v) => VaksinData.fromMap(v))
+          .toList();
     }
 
     if (json['vaksinatorList'] != null) {
-      vaksinatorList.value = (json['vaksinatorList'] as List).map((v) => VaksinatorData(
-        nama: v['nama'],
-        jumlahDOC: v['jumlahDOC'],
-        cullingBasah: v['cullingBasah'],
-        cullingBerdarah: v['cullingBerdarah'],
-        cullingMati: v['cullingMati'],
-        gantiJarum: v['gantiJarum'],
-      )).toList();
+      vaksinatorList.value = (json['vaksinatorList'] as List)
+          .map(
+            (v) => VaksinatorData(
+              nama: v['nama'],
+              jumlahDOC: v['jumlahDOC'],
+              cullingBasah: v['cullingBasah'],
+              cullingBerdarah: v['cullingBerdarah'],
+              cullingMati: v['cullingMati'],
+              gantiJarum: v['gantiJarum'],
+            ),
+          )
+          .toList();
     }
   }
 }

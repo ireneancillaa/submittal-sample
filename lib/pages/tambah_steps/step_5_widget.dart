@@ -42,263 +42,269 @@ class _Step5WidgetState extends State<Step5Widget> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        // Main Header
-        _buildSectionTitle(
-          icon: Icons.biotech_outlined,
-          title: 'Persiapan Vaksin Subcutan',
-          subtitle: 'Checklist persiapan sebelum proses vaksin subcutan',
-        ),
-        const SizedBox(height: 16),
-
-        // 1. Lama waktu thawing
-        _buildItemCard(
-          number: '1. Lama waktu thawing vaksin ND Killed',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 4,
-                    child: _buildTextField(
-                      label: 'Durasi',
-                      initialValue: controller.thawingDurasi.value,
-                      onChanged: (v) => controller.thawingDurasi.value = v,
-                      hint: '15 menit',
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 6,
-                    child: _buildThreeWayToggle(
-                      label: 'Status',
-                      currentValue: controller.thawingStatus.value,
-                      onChanged: (v) => controller.thawingStatus.value = v,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _buildPhotoArea(
-                label: 'Foto bukti (opsional)',
-                photoPath: controller.thawingFoto.value,
-                onTap: () => _pickImageTo(controller.thawingFoto),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                label: 'Keterangan',
-                initialValue: controller.thawingKet.value,
-                onChanged: (v) => controller.thawingKet.value = v,
-                hint: 'Keterangan',
-              ),
-            ],
+    return Obx(
+      () => Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Main Header
+          _buildSectionTitle(
+            icon: Icons.biotech_outlined,
+            title: 'Persiapan Vaksin Subcutan',
+            subtitle: 'Checklist persiapan sebelum proses vaksin subcutan',
           ),
-        ),
+          const SizedBox(height: 16),
 
-        const SizedBox(height: 16),
-
-        // 2. Cuci tangan
-        _buildItemCard(
-          number: '2. Cuci tangan dan disinfeksi meja mixing',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildThreeWayToggle(
-                label: 'Status',
-                currentValue: controller.cuciTanganStatusSC.value,
-                onChanged: (v) => controller.cuciTanganStatusSC.value = v,
-              ),
-              const SizedBox(height: 12),
-              _buildPhotoArea(
-                label: 'Foto bukti (opsional)',
-                photoPath: controller.cuciTanganFotoSC.value,
-                onTap: () => _pickImageTo(controller.cuciTanganFotoSC),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                label: 'Keterangan',
-                initialValue: controller.cuciTanganKetSC.value,
-                onChanged: (v) => controller.cuciTanganKetSC.value = v,
-                hint: 'Keterangan',
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // 3. Bilas vial
-        _buildItemCard(
-          number: '3. Bilas vial vaksin IBD',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildThreeWayToggle(
-                label: 'Status',
-                currentValue: controller.bilasVialStatusSC.value,
-                onChanged: (v) => controller.bilasVialStatusSC.value = v,
-              ),
-              const SizedBox(height: 12),
-              _buildPhotoArea(
-                label: 'Foto bukti (opsional)',
-                photoPath: controller.bilasVialFotoSC.value,
-                onTap: () => _pickImageTo(controller.bilasVialFotoSC),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                label: 'Keterangan',
-                initialValue: controller.bilasVialKetSC.value,
-                onChanged: (v) => controller.bilasVialKetSC.value = v,
-                hint: 'Keterangan',
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // 4. Ukuran jarum
-        _buildItemCard(
-          number: '4. Ukuran jarum mixing',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    flex: 4,
-                    child: _buildTextField(
-                      label: 'Ukuran jarum',
-                      initialValue: controller.jarumMixingUkuranSC.value,
-                      onChanged: (v) => controller.jarumMixingUkuranSC.value = v,
-                      hint: '18 G',
+          // 1. Lama waktu thawing
+          _buildItemCard(
+            number: '1. Lama waktu thawing vaksin ND Killed',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: _buildTextField(
+                        label: 'Durasi',
+                        initialValue: controller.thawingDurasi.value,
+                        onChanged: (v) => controller.thawingDurasi.value = v,
+                        hint: '15',
+                        suffix: 'menit',
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    flex: 6,
-                    child: _buildThreeWayToggle(
-                      label: 'Status',
-                      currentValue: controller.jarumMixingStatusSC.value,
-                      onChanged: (v) => controller.jarumMixingStatusSC.value = v,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 6,
+                      child: _buildThreeWayToggle(
+                        label: 'Status',
+                        currentValue: controller.thawingStatus.value,
+                        onChanged: (v) => controller.thawingStatus.value = v,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              _buildPhotoArea(
-                label: 'Foto bukti (opsional)',
-                photoPath: controller.jarumMixingFotoSC.value,
-                onTap: () => _pickImageTo(controller.jarumMixingFotoSC),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                label: 'Keterangan',
-                initialValue: controller.jarumMixingKetSC.value,
-                onChanged: (v) => controller.jarumMixingKetSC.value = v,
-                hint: 'Keterangan',
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // 5. Disinfeksi vial kosong
-        _buildItemCard(
-          number: '5. Disinfeksi vial kosong',
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildThreeWayToggle(
-                label: 'Status',
-                currentValue: controller.disinfeksiVialStatusSC.value,
-                onChanged: (v) => controller.disinfeksiVialStatusSC.value = v,
-              ),
-              if (controller.disinfeksiVialStatusSC.value == 'Tidak') ...[
-                const SizedBox(height: 4),
-                const Text(
-                  'Perlu tindakan koreksi',
-                  style: TextStyle(
-                    color: _red,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildPhotoArea(
+                  label: 'Foto bukti (opsional)',
+                  photoPath: controller.thawingFoto.value,
+                  onTap: () => _pickImageTo(controller.thawingFoto),
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: 'Keterangan',
+                  initialValue: controller.thawingKet.value,
+                  onChanged: (v) => controller.thawingKet.value = v,
+                  hint: 'Keterangan',
                 ),
               ],
-              const SizedBox(height: 12),
-              _buildPhotoArea(
-                label: 'Foto bukti (opsional)',
-                photoPath: controller.disinfeksiVialFotoSC.value,
-                onTap: () => _pickImageTo(controller.disinfeksiVialFotoSC),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                label: 'Keterangan',
-                initialValue: controller.disinfeksiVialKetSC.value,
-                onChanged: (v) => controller.disinfeksiVialKetSC.value = v,
-                hint: 'Keterangan',
-              ),
-            ],
+            ),
           ),
-        ),
 
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-        const SizedBox(height: 16),
-
-        // Foto Persiapan
-        _buildCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Foto Persiapan',
-                style: TextStyle(
-                  color: _darkBlue,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+          // 2. Cuci tangan
+          _buildItemCard(
+            number: '2. Cuci tangan dan disinfeksi meja mixing',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildThreeWayToggle(
+                  label: 'Status',
+                  currentValue: controller.cuciTanganStatusSC.value,
+                  onChanged: (v) => controller.cuciTanganStatusSC.value = v,
                 ),
-              ),
-              const SizedBox(height: 12),
-              _buildImageUploadPlaceholder(),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        // Catatan Tambahan
-        _buildCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Catatan Tambahan',
-                style: TextStyle(
-                  color: _darkBlue,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                const SizedBox(height: 12),
+                _buildPhotoArea(
+                  label: 'Foto bukti (opsional)',
+                  photoPath: controller.cuciTanganFotoSC.value,
+                  onTap: () => _pickImageTo(controller.cuciTanganFotoSC),
                 ),
-              ),
-              const SizedBox(height: 12),
-              _buildTextField(
-                label: '',
-                initialValue: controller.catatanPersiapanSC.value,
-                onChanged: (v) => controller.catatanPersiapanSC.value = v,
-                hint: 'Tambahkan catatan bila diperlukan',
-              ),
-            ],
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: 'Keterangan',
+                  initialValue: controller.cuciTanganKetSC.value,
+                  onChanged: (v) => controller.cuciTanganKetSC.value = v,
+                  hint: 'Keterangan',
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-      ],
-    ));
+
+          const SizedBox(height: 16),
+
+          // 3. Bilas vial
+          _buildItemCard(
+            number: '3. Bilas vial vaksin IBD',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildThreeWayToggle(
+                  label: 'Status',
+                  currentValue: controller.bilasVialStatusSC.value,
+                  onChanged: (v) => controller.bilasVialStatusSC.value = v,
+                ),
+                const SizedBox(height: 12),
+                _buildPhotoArea(
+                  label: 'Foto bukti (opsional)',
+                  photoPath: controller.bilasVialFotoSC.value,
+                  onTap: () => _pickImageTo(controller.bilasVialFotoSC),
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: 'Keterangan',
+                  initialValue: controller.bilasVialKetSC.value,
+                  onChanged: (v) => controller.bilasVialKetSC.value = v,
+                  hint: 'Keterangan',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 4. Ukuran jarum
+          _buildItemCard(
+            number: '4. Ukuran jarum mixing',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      flex: 4,
+                      child: _buildTextField(
+                        label: 'Ukuran jarum',
+                        initialValue: controller.jarumMixingUkuranSC.value,
+                        onChanged: (v) =>
+                            controller.jarumMixingUkuranSC.value = v,
+                        hint: '18',
+                        suffix: 'G',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      flex: 6,
+                      child: _buildThreeWayToggle(
+                        label: 'Status',
+                        currentValue: controller.jarumMixingStatusSC.value,
+                        onChanged: (v) =>
+                            controller.jarumMixingStatusSC.value = v,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _buildPhotoArea(
+                  label: 'Foto bukti (opsional)',
+                  photoPath: controller.jarumMixingFotoSC.value,
+                  onTap: () => _pickImageTo(controller.jarumMixingFotoSC),
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: 'Keterangan',
+                  initialValue: controller.jarumMixingKetSC.value,
+                  onChanged: (v) => controller.jarumMixingKetSC.value = v,
+                  hint: 'Keterangan',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 5. Disinfeksi vial kosong
+          _buildItemCard(
+            number: '5. Disinfeksi vial kosong',
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildThreeWayToggle(
+                  label: 'Status',
+                  currentValue: controller.disinfeksiVialStatusSC.value,
+                  onChanged: (v) => controller.disinfeksiVialStatusSC.value = v,
+                ),
+                if (controller.disinfeksiVialStatusSC.value == 'Tidak') ...[
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Perlu tindakan koreksi',
+                    style: TextStyle(
+                      color: _red,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+                _buildPhotoArea(
+                  label: 'Foto bukti (opsional)',
+                  photoPath: controller.disinfeksiVialFotoSC.value,
+                  onTap: () => _pickImageTo(controller.disinfeksiVialFotoSC),
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: 'Keterangan',
+                  initialValue: controller.disinfeksiVialKetSC.value,
+                  onChanged: (v) => controller.disinfeksiVialKetSC.value = v,
+                  hint: 'Keterangan',
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          const SizedBox(height: 16),
+
+          // Foto Persiapan
+          _buildCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Foto Persiapan',
+                  style: TextStyle(
+                    color: _darkBlue,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildImageUploadPlaceholder(),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Catatan Tambahan
+          _buildCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Catatan Tambahan',
+                  style: TextStyle(
+                    color: _darkBlue,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildTextField(
+                  label: '',
+                  initialValue: controller.catatanPersiapanSC.value,
+                  onChanged: (v) => controller.catatanPersiapanSC.value = v,
+                  hint: 'Tambahkan catatan bila diperlukan',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+      ),
+    );
   }
 
   Widget _buildItemCard({required String number, required Widget child}) {
@@ -380,7 +386,11 @@ class _Step5WidgetState extends State<Step5Widget> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Center(
-                      child: Icon(Icons.camera_alt, color: Colors.white, size: 24),
+                      child: Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 24,
+                      ),
                     ),
                   ),
           ),
@@ -495,19 +505,27 @@ class _Step5WidgetState extends State<Step5Widget> {
                     ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ),
               if (suffix != null)
-                Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: Text(
-                    suffix,
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Text(
+                        suffix,
+                        style: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -625,7 +643,9 @@ class _Step5WidgetState extends State<Step5Widget> {
                 borderRadius: BorderRadius.circular(10),
                 image: controller.fotoPersiapanSC.value.isNotEmpty
                     ? DecorationImage(
-                        image: FileImage(File(controller.fotoPersiapanSC.value)),
+                        image: FileImage(
+                          File(controller.fotoPersiapanSC.value),
+                        ),
                         fit: BoxFit.cover,
                       )
                     : null,
@@ -654,10 +674,7 @@ class _Step5WidgetState extends State<Step5Widget> {
                     controller.fotoPersiapanSC.value.isEmpty
                         ? 'Ambil foto persiapan alat & vaksin'
                         : 'Tap untuk ganti foto',
-                    style: const TextStyle(
-                      color: _mutedText,
-                      fontSize: 11,
-                    ),
+                    style: const TextStyle(color: _mutedText, fontSize: 11),
                   ),
                 ],
               ),

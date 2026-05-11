@@ -195,29 +195,17 @@ class _Step8WidgetState extends State<Step8Widget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: _buildTextField(
-                        label: 'Waktu',
-                        initialValue: controller.waktuAplikasiSP.value,
-                        onChanged: (v) => controller.waktuAplikasiSP.value = v,
-                        hint: '1 jam 30 menit',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 6,
-                      child: _buildStatusToggle(
-                        label: 'Status',
-                        isOk: controller.waktuAplikasiOkSP.value,
-                        onChanged: (v) =>
-                            controller.waktuAplikasiOkSP.value = v,
-                      ),
-                    ),
-                  ],
+                _buildTextField(
+                  label: 'Waktu',
+                  initialValue: controller.waktuAplikasiSP.value,
+                  onChanged: (v) => controller.waktuAplikasiSP.value = v,
+                  hint: '1 jam 30 menit',
+                ),
+                const SizedBox(height: 12),
+                _buildStatusToggle(
+                  label: 'Status',
+                  isOk: controller.waktuAplikasiOkSP.value,
+                  onChanged: (v) => controller.waktuAplikasiOkSP.value = v,
                 ),
                 const SizedBox(height: 12),
                 _buildTextField(
@@ -423,7 +411,10 @@ class _Step8WidgetState extends State<Step8Widget> {
                     ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ),

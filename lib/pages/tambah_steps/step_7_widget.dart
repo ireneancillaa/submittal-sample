@@ -112,7 +112,8 @@ class _Step7WidgetState extends State<Step7Widget> {
                         label: 'Ukuran',
                         initialValue: controller.ukuranJarumSC.value,
                         onChanged: (v) => controller.ukuranJarumSC.value = v,
-                        hint: '18 G',
+                        hint: '18',
+                        suffix: 'G',
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -343,29 +344,17 @@ class _Step7WidgetState extends State<Step7Widget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      flex: 4,
-                      child: _buildTextField(
-                        label: 'Waktu',
-                        initialValue: controller.waktuAplikasiSC.value,
-                        onChanged: (v) => controller.waktuAplikasiSC.value = v,
-                        hint: '1 jam 40 menit',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 6,
-                      child: _buildStatusToggle(
-                        label: 'Status',
-                        isOk: controller.waktuAplikasiOkSC.value,
-                        onChanged: (v) =>
-                            controller.waktuAplikasiOkSC.value = v,
-                      ),
-                    ),
-                  ],
+                _buildTextField(
+                  label: 'Waktu',
+                  initialValue: controller.waktuAplikasiSC.value,
+                  onChanged: (v) => controller.waktuAplikasiSC.value = v,
+                  hint: '1 jam 40 menit',
+                ),
+                const SizedBox(height: 12),
+                _buildStatusToggle(
+                  label: 'Status',
+                  isOk: controller.waktuAplikasiOkSC.value,
+                  onChanged: (v) => controller.waktuAplikasiOkSC.value = v,
                 ),
                 const SizedBox(height: 12),
                 _buildTextField(
@@ -571,7 +560,10 @@ class _Step7WidgetState extends State<Step7Widget> {
                     ),
                     border: InputBorder.none,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ),
